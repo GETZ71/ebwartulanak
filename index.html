@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WarTulNak - Warisan Kuliner Nusantara</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #fafaf9; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        .menu-img { width: 100%; height: 200px; object-fit: cover; background-color: #e7e5e4; }
+    </style>
+</head>
+<body class="text-stone-900">
+
+    <script>
+        const CONFIG = {
+            whatsappNumber: "62895332777171",
+            namaWarung: "WarTulNak",
+            tagline: "Ayam Tulang Lunak Spesial Cimahi",
+            alamatLengkap: "Jl. Mahar Martanegara No. 129, Kel. Cigugur Tengah, Kec. Cimahi Tengah, Kota Cimahi, Jawa Barat 40522",
+            menuList: [
+                { id: 'tn', name: 'Paket TulNak', price: 15000, img: 'menu1.jpg' },
+                { id: 'le', name: 'Paket Lelenak', price: 12000, img: 'menu2.jpeg' },
+                { id: 'ms', name: 'Minuman Segar', price: 6000, img: 'menu3.webp' }
+            ]
+        };
+    </script>
+
+    <header class="relative bg-stone-900 text-white min-h-[400px] flex flex-col items-center justify-center text-center p-6">
+        <div class="absolute inset-0 opacity-50 bg-[url('warung.webp')] bg-cover bg-center"></div>
+        <div class="relative z-10">
+            <h2 class="text-orange-400 tracking-[0.2em] uppercase text-sm mb-2">Warisan Kuliner Nusantara</h2>
+            <h1 class="text-5xl md:text-6xl mb-4"><script>document.write(CONFIG.namaWarung)</script></h1>
+            <p class="text-lg italic text-stone-200"><script>document.write(CONFIG.tagline)</script></p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-12">
+        <section class="max-w-5xl mx-auto">
+            <h2 class="text-3xl text-center mb-10">Menu Pilihan</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <script>
+                    CONFIG.menuList.forEach(item => {
+                        document.write(`
+                            <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-stone-100">
+                                <img src="${item.img}" alt="${item.name}" class="menu-img">
+                                <div class="p-5">
+                                    <h3 class="text-xl font-bold mb-2">${item.name}</h3>
+                                    <p class="text-orange-600 font-semibold mb-2">Rp ${item.price.toLocaleString()}</p>
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <button onclick="updateQty('${item.id}', -1)" class="bg-stone-200 w-8 h-8 rounded-full font-bold">-</button>
+                                        <span id="qty-${item.id}" class="font-bold">1</span>
+                                        <button onclick="updateQty('${item.id}', 1)" class="bg-stone-200 w-8 h-8 rounded-full font-bold">+</button>
+                                    </div>
+                                    <button onclick="addToCart('${item.name}', '${item.id}', ${item.price})" class="w-full bg-stone-900 text-white py-2 rounded-lg text-sm hover:bg-orange-600 transition">Tambah ke Keranjang</button>
+                                </div>
+                            </div>
+                        `);
+                    });
+                </script>
+            </div>
+        </section>
+
+        <section id="order-form" class="max-w-xl mx-auto mt-16 bg-white p-8 rounded-3xl shadow-xl border border-stone-100">
+            <h2 class="text-2xl font-bold mb-6 text-center">Keranjang Anda</h2>
+            <div id="cart-items" class="mb-6 space-y-2"><p class="text-stone-500 text-center">Belum ada pesanan.</p></div>
+            <div id="cart-total" class="text-right font-bold text-xl mb-6 hidden"></div>
+            
+            <div class="space-y-4">
+                <input type="text" id="nama" placeholder="Nama Anda" required class="w-full p-4 bg-stone-100 rounded-xl outline-none">
+                <select id="layanan" onchange="toggleLayananOptions()" class="w-full p-4 bg-stone-100 rounded-xl outline-none">
+                    <option value="Makan di Tempat">Makan di Tempat</option>
+                    <option value="Bungkus">Bungkus</option>
+                    <option value="Kirim">Kirim (Delivery)</option>
+                </select>
+                
+                <select id="waktuAmbil" class="w-full p-4 bg-stone-100 rounded-xl outline-none hidden">
+                    <option value="">Pilih Jam Pengambilan</option>
+                    <option value="15 Menit Lagi">15 Menit Lagi</option>
+                    <option value="30 Menit Lagi">30 Menit Lagi</option>
+                    <option value="1 Jam Lagi">1 Jam Lagi</option>
+                </select>
+
+                <textarea id="alamat" placeholder="Alamat Pengiriman Lengkap" class="w-full p-4 bg-stone-100 rounded-xl outline-none hidden"></textarea>
+                
+                <div class="flex items-start gap-2 text-sm text-stone-600 pt-2">
+                    <input type="checkbox" id="setuju" class="mt-1">
+                    <label for="setuju">Saya memesan dengan serius dan bersedia dikonfirmasi ulang via WhatsApp.</label>
+                </div>
+
+                <button type="button" onclick="kirimWhatsApp()" class="w-full bg-orange-600 text-white py-4 rounded-xl font-bold hover:bg-orange-700 transition">Pesan via WhatsApp</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let cart = [];
+        function updateQty(id, change) {
+            const el = document.getElementById('qty-' + id);
+            let val = parseInt(el.innerText) + change;
+            if (val < 1) val = 1;
+            el.innerText = val;
+        }
+        function toggleLayananOptions() {
+            const layanan = document.getElementById('layanan').value;
+            const alamat = document.getElementById('alamat');
+            const waktuAmbil = document.getElementById('waktuAmbil');
+            alamat.classList.toggle('hidden', layanan !== 'Kirim');
+            waktuAmbil.classList.toggle('hidden', layanan !== 'Bungkus');
+        }
+        function addToCart(name, id, price) {
+            const qty = parseInt(document.getElementById('qty-' + id).innerText);
+            cart.push({id: Date.now(), name, qty, price});
+            updateCartUI();
+        }
+        function removeFromCart(cartId) {
+            cart = cart.filter(item => item.id !== cartId);
+            updateCartUI();
+        }
+        function updateCartUI() {
+            const container = document.getElementById('cart-items');
+            const totalEl = document.getElementById('cart-total');
+            let total = 0;
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-stone-500 text-center">Belum ada pesanan.</p>';
+                totalEl.classList.add('hidden');
+                return;
+            }
+            container.innerHTML = cart.map(item => {
+                let subtotal = item.qty * item.price;
+                total += subtotal;
+                return `
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span>${item.name} (${item.qty}x)</span>
+                        <div class="flex items-center gap-2">
+                            <span>Rp ${subtotal.toLocaleString()}</span>
+                            <button onclick="removeFromCart(${item.id})" class="text-red-500 font-bold px-2">×</button>
+                        </div>
+                    </div>`;
+            }).join('');
+            totalEl.innerHTML = `Total: Rp ${total.toLocaleString()}`;
+            totalEl.classList.remove('hidden');
+        }
+        function kirimWhatsApp() {
+            const nama = document.getElementById('nama').value;
+            const layanan = document.getElementById('layanan').value;
+            const alamat = document.getElementById('alamat').value;
+            const waktuAmbil = document.getElementById('waktuAmbil').value;
+            const setuju = document.getElementById('setuju').checked;
+            
+            if (!nama || cart.length === 0) { alert('Mohon isi nama dan pilih menu!'); return; }
+            if (layanan === 'Kirim' && !alamat) { alert('Mohon isi alamat pengiriman!'); return; }
+            if (layanan === 'Bungkus' && !waktuAmbil) { alert('Mohon pilih jam pengambilan!'); return; }
+            if (!setuju) { alert('Mohon centang persetujuan pesanan terlebih dahulu.'); return; }
+            
+            let total = 0;
+            let pesan = `Halo WarTulNak, saya mau pesan:\n\n`;
+            pesan += `🛒 *DETAIL PESANAN:*\n`;
+            cart.forEach(item => {
+                let subtotal = item.qty * item.price;
+                total += subtotal;
+                pesan += `- ${item.name}: ${item.qty} porsi (Rp ${subtotal.toLocaleString()})\n`;
+            });
+            pesan += `\n💰 *TOTAL BAYAR:* *Rp ${total.toLocaleString()}*\n\n`;
+            pesan += `📝 *INFORMASI LAYANAN:*\n- *Jenis:* ${layanan}\n`;
+            if (layanan === 'Kirim') pesan += `- *Alamat:* ${alamat}\n`;
+            if (layanan === 'Bungkus') pesan += `- *Waktu Pengambilan:* ${waktuAmbil}\n`;
+            pesan += `\n✅ *STATUS:*\nSaya setuju pesanan ini nyata dan bisa dikonfirmasi.\n\n👤 *ATAS NAMA:*\n${nama}`;
+            
+            // Menggunakan encodeURIComponent untuk memastikan karakter khusus terproses, 
+            // namun dengan format \n yang langsung terbaca sebagai newline oleh WA.
+            window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=` + encodeURIComponent(pesan), '_blank');
+        }
+    </script>
+</body>
+</html>
